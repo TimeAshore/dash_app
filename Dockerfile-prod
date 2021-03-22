@@ -1,0 +1,29 @@
+# base image
+FROM python:3.7-slim
+
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# install netcat
+RUN apt-get update && \
+    apt-get -y install netcat && \
+    apt-get clean
+
+# set working directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# add and install requirements
+COPY ./requirements.txt /usr/src/app/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# add entrypoint.sh
+COPY ./entrypoint-prod.sh /usr/src/app/entrypoint-prod.sh
+RUN chmod +x /usr/src/app/entrypoint-prod.sh
+
+# add app
+COPY . /usr/src/app
+
+# run server
+CMD ["/usr/src/app/entrypoint-prod.sh"]
