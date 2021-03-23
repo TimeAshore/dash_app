@@ -8,7 +8,7 @@ import jieba.posseg
 import json
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
 import numpy as np
@@ -123,7 +123,8 @@ class DashSubdomainBiz(BaseBiz):
     def get_industries_data(self):
         domain, subdomain = [], []
         industry_list = self.session.query(Industry.name).all()
-        industry_list = [x[0] for x in industry_list if x[0] not in ['其他', '教育', '地方政府', '卫生计生', '新闻出版广电', '群众组织及社会团体', '文化', '人力资源和社会保障', '党委下设办公室']]
+        industry_list = [x[0] for x in industry_list if
+                         x[0] not in ['其他', '教育', '地方政府', '卫生计生', '新闻出版广电', '群众组织及社会团体', '文化', '人力资源和社会保障', '党委下设办公室']]
         # industry_list = industry_list[:40]
 
         for x in industry_list:
@@ -298,17 +299,17 @@ def get_3D():
     df = px.data.gapminder().query("continent=='Oceania'")
     print(df)
     x = [
-        '无效网站',
-        '被黑-博彩',
-        '运营商拦截',
-        '私人企业',
-        '企业邮箱',
-        '被黑-色情',
-        '网站关闭',
-        '微信接口',
-        'WAF拦截',
-        '系统漏洞'
-    ]*10
+            '无效网站',
+            '被黑-博彩',
+            '运营商拦截',
+            '私人企业',
+            '企业邮箱',
+            '被黑-色情',
+            '网站关闭',
+            '微信接口',
+            'WAF拦截',
+            '系统漏洞'
+        ] * 10
 
     z = [random.randint(1, 1000) for _ in range(len(x))]
     y = [random.randint(1, 1000) for _ in range(len(z))]
@@ -329,7 +330,6 @@ def get_3D():
     z_data = pd.read_csv('./mt_bruno_elevation.csv')
     print(z_data.loc[[1, 10]])
 
-
     # z = [random.randint(1, 1000) for _ in range(3000)]
     # t = {'z': z}
     # df = pd.DataFrame(t)
@@ -343,7 +343,6 @@ def get_3D():
                       width=1000,
                       height=1000,
                       )
-
 
     import pandas as pd
     import numpy as np
@@ -410,3 +409,60 @@ def add_test(dash_app):
         fig2.add_trace(go.Scatter(x=citys, y=JunZhi2, mode='lines', name='均值', line=dict(width=2)))
         fig2.update_layout(title='子域名Top10', xaxis_title='city', yaxis_title='count', height=300)
         return fig1, fig2
+
+
+def twice_test(dash_app):
+    import datetime
+    dash_app.layout = html.Div([
+        dcc.Upload(
+            id='upload-image',
+            children=html.Div([
+                'Drag and Drop or ',
+                html.A('Select Files')
+            ]),
+            style={
+                'width': '100%',
+                'height': '60px',
+                'lineHeight': '60px',
+                'borderWidth': '1px',
+                'borderStyle': 'dashed',
+                'borderRadius': '5px',
+                'textAlign': 'center',
+                'margin': '10px'
+            },
+            # Allow multiple files to be uploaded
+            multiple=True
+        ),
+        html.Textarea(id='output-image-upload'),
+    ])
+
+    def parse_contents(contents, filename, date):
+        return html.Div([
+            html.H5(filename),
+            html.H6(datetime.datetime.fromtimestamp(date)),
+
+            # HTML images accept base64 encoded strings in the same format
+            # that is supplied by the upload
+            html.Img(src=contents),
+            html.Hr(),
+            html.Div('Raw Content'),
+            html.Pre(contents[0:200] + '...', style={
+                'whiteSpace': 'pre-wrap',
+                'wordBreak': 'break-all'
+            })
+        ])
+
+    @dash_app.callback(Output('output-image-upload', 'value'),
+                  Input('upload-image', 'contents'),
+                  State('upload-image', 'filename'),
+                  State('upload-image', 'last_modified'))
+    def update_output(list_of_contents, list_of_names, list_of_dates):
+        print(list_of_contents)
+        print(list_of_names)
+        print(list_of_dates)
+        # if list_of_contents is not None:
+        #     children = [
+        #         parse_contents(c, n, d) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
+        import base64
+        print(base64.b64decode(list_of_dates[0]))
+        return list_of_contents[0]

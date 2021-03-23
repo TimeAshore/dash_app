@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from flask_script import Manager
 from project.api.bizs.dash_biz import dash1_add_content, dtest
 from project.api.bizs.dash_domain_city import domain_city_add_content
-from project.api.bizs.dash_subdomain_biz import subdomain_dashboard_add_content, add_test
+from project.api.bizs.dash_subdomain_biz import subdomain_dashboard_add_content, add_test, twice_test
 
 import dash
 import dash_table
@@ -21,16 +21,20 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 app = create_app()
 app.app_context().push()
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
 
 # ========================== dash服务 ===========================================================
 dash_app1 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/index/')
 dash_app2 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/domain/')
 dash_app3 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/subdomain/')
 dash_test = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/test/')
+dash_test2 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/test2/', external_stylesheets=external_stylesheets)
 dtest(dash_app1)
 domain_city_add_content(dash_app2)
 subdomain_dashboard_add_content(dash_app3)
 add_test(dash_test)
+twice_test(dash_test2)
 # =========================================================================================================
 
 

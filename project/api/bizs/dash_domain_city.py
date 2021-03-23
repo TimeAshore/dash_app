@@ -121,7 +121,7 @@ def domain_city_add_content(dash_app):
                 figure=get_default()
             )
         ], style=dict(width='40%', display='inline-block')),
-    ])
+    ], style=dict(width='70%', display='inline-block'))
 
     @dash_app.callback(Output('show_id', 'figure'), [Input('input_id', 'hoverData'), Input('input_id', 'figure')])
     def show_clickData(hoverData, figure):
