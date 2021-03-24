@@ -1,25 +1,11 @@
 import re
-import dash
-import dash_table
-# from showimg import dash_app3
 import dash_core_components as dcc
 import dash_html_components as html
-from flask import render_template, redirect, Flask
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
-
 import jieba
 import jieba.analyse
 import jieba.posseg
-
-
-import dash
 import json
-import dash_core_components as dcc
-import dash_html_components as html
 from dash.dependencies import Input, Output
-import plotly.express as px
-import pandas as pd
-import numpy as np
 import plotly.graph_objects as go
 
 
