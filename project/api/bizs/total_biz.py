@@ -6,6 +6,7 @@ import jieba
 import jieba.analyse
 import jieba.posseg
 import json
+from datetime import date
 import random
 import pandas as pd
 import dash_core_components as dcc
@@ -110,10 +111,11 @@ class TotalBiz(BaseBiz):
                 ans.append(x[0])
         return ans
 
-    def get_city_industries_cnt(self, city, industries):
+    def get_city_industries_cnt(self, city, industries, start_date, end_date):
         res = self.session.query(WebsiteArchived.industries,
-                                 count(WebsiteArchived.industries).label('industries_cnt')).filter_by(
-            city_code=city).group_by(WebsiteArchived.industries).all()
+                                 count(WebsiteArchived.industries).label('industries_cnt')).filter(and_(
+            WebsiteArchived.city_code == city, WebsiteArchived.create_time > start_date, WebsiteArchived.create_time < end_date
+        )).group_by(WebsiteArchived.industries).all()
         ans = []
         for industrie in industries:
             p = False
@@ -291,8 +293,123 @@ def get_domain_bar():
 
     fig = go.Figure(data=[go.Bar(x=x, y=y, hovertext=ratio)])
     # Customize aspect
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=[i//2 for i in y],
+            mode='lines',
+            line=dict(color="#849E68"),
+        ))
     fig.update_traces(marker_color='rgb(158,202,225)', marker_line_color='rgb(8,48,107)', marker_line_width=1.5, opacity=0.6)
     fig.update_layout(title_text='2020年河南省主域名数量分布情况', height=650)
+    return fig
+
+
+def clusters():
+    np.random.seed(1)
+
+    # Generate data
+    x0 = np.random.normal(1.3, 0.15, 1435)
+    y0 = np.random.normal(-2, 1.45, 1435)
+
+    x1 = np.random.normal(6, 0.4, 1238)
+    y1 = np.random.normal(6, 0.4, 1238)
+
+    x2 = np.random.normal(2, 0.2, 132)
+    y2 = np.random.normal(2, 3.0, 132)
+
+    x3 = np.random.normal(4, 1, 233)
+    y3 = np.random.normal(4, 1.5, 233)
+
+    x4 = np.random.normal(-1.5, 0.7, 122)
+    y4 = np.random.normal(-1.5, 1.2, 122)
+
+    x5 = np.random.normal(-2, 0.2, 300)
+    y5 = np.random.normal(9.5, 0.5, 300)
+
+    # x6 = np.random.normal(2, 0.2, 1032)
+    # y6 = np.random.normal(2, 3.0, 1032)
+    #
+    # x7 = np.random.normal(2, 0.2, 1032)
+    # y7 = np.random.normal(2, 3.0, 1032)
+    #
+    # x8 = np.random.normal(2, 0.2, 1032)
+    # y8 = np.random.normal(2, 3.0, 1032)
+    #
+    # x9 = np.random.normal(2, 0.2, 1032)
+    # y9 = np.random.normal(2, 3.0, 1032)
+
+    fig = go.Figure()
+
+    # Add scatter traces
+    fig.add_trace(go.Scatter(x=x0, y=y0, mode="markers", name='无效网站'))
+    fig.add_trace(go.Scatter(x=x1, y=y1, mode="markers", name='被黑-博彩'))
+    fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='运营商拦截'))
+
+    fig.add_trace(go.Scatter(x=x3, y=y3, mode="markers", name='私人企业'))
+    fig.add_trace(go.Scatter(x=x4, y=y4, mode="markers", name='企业邮箱'))
+    fig.add_trace(go.Scatter(x=x5, y=y5, mode="markers", name='WAF拦截'))
+
+
+    # fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='被黑-色情'))
+    # fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='网站关闭'))
+    # fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='微信接口'))
+    # fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='WAF拦截'))
+
+    # Add shapes
+    fig.add_shape(type="circle",
+                  xref="x", yref="y",
+                  x0=min(x0), y0=min(y0),
+                  x1=max(x0), y1=max(y0),
+                  opacity=0.2,
+                  fillcolor="blue",
+                  line_color="blue",
+                  )
+
+    fig.add_shape(type="circle",
+                  xref="x", yref="y",
+                  x0=min(x1), y0=min(y1),
+                  x1=max(x1), y1=max(y1),
+                  opacity=0.2,
+                  fillcolor="black",
+                  line_color="black",
+                  )
+    fig.add_shape(type="circle",
+                  xref="x", yref="y",
+                  x0=min(x2), y0=min(y2),
+                  x1=max(x2), y1=max(y2),
+                  opacity=0.2,
+                  fillcolor="red",
+                  line_color="red",
+                  )
+    fig.add_shape(type="circle",
+                  xref="x", yref="y",
+                  x0=min(x3), y0=min(y3),
+                  x1=max(x3), y1=max(y3),
+                  opacity=0.2,
+                  fillcolor="gold",
+                  line_color="gold",#'gold', 'mediumturquoise', 'darkorange', 'lightgreen'
+                  )
+    fig.add_shape(type="circle",
+                  xref="x", yref="y",
+                  x0=min(x4), y0=min(y4),
+                  x1=max(x4), y1=max(y4),
+                  opacity=0.2,
+                  fillcolor="mediumturquoise",
+                  line_color="mediumturquoise",
+                  )
+    fig.add_shape(type="circle",
+                  xref="x", yref="y",
+                  x0=min(x5), y0=min(y5),
+                  x1=max(x5), y1=max(y5),
+                  opacity=0.2,
+                  fillcolor="yellow",
+                  line_color="yellow",
+                  )
+    fig.update_layout(title='黑名单种类')
+
+    # Hide legend
+    # fig.update_layout(showlegend=False)
     return fig
 
 
@@ -399,7 +516,7 @@ def total_content(app):
                                 className="dcc_control",
                             ),
                         ],
-                        className="pretty_container four columns",
+                        className="pretty_container four columns"
                     ),
                     html.Div(
                         [
@@ -408,7 +525,7 @@ def total_content(app):
                                 className="pretty_container",
                             ),
                         ],
-                        className="eight columns",
+                        className="pretty_container eight columns"
                     ),
                 ],
                 className="row flex-display",
@@ -439,12 +556,11 @@ def total_content(app):
                 [
                     html.Div(
                         [dcc.Graph(id="main_graph", figure=get_http_code_fig())],
-                        className="pretty_container seven columns",
+                        className="pretty_container four columns",
                     ),
-                    html.Div(
-                        [dcc.Graph(id="individual_graph", figure=get_domain_host_type_fig())],
-                        className="pretty_container five columns",
-                    ),
+                    html.Div([
+                        dcc.Graph(id='clusters', figure=clusters()),
+                    ], className="pretty_container eight columns")
                 ],
                 className="row flex-display",
             ),
@@ -452,6 +568,19 @@ def total_content(app):
                 [
                     html.Div(
                         [
+                            html.P("Filter by found date:", className="control_label"),
+                            dcc.DatePickerRange(
+                                id='date_range',
+                                min_date_allowed=date(2015, 1, 1),
+                                max_date_allowed=date(2022, 1, 1),
+                                initial_visible_month=date(2020, 5, 1),
+                                start_date=date(2019, 1, 30),
+                                end_date=date(2020, 7, 30)
+                            ),
+                            html.Br(),
+                            html.Br(),
+                            html.Br(),
+                            html.Br(),
                             html.P("Filter by city:", className="control_label"),
                             dcc.Dropdown(id='city_name',
                                          value=['洛阳市', '兰考县', '信阳市', '濮阳市', '鹤壁市'],
@@ -518,13 +647,23 @@ def total_content(app):
                         max=1000,
                         value=[50, 700],
                         className="dcc_control",
+                        marks={
+                            0: {'label': '0', 'style': {'color': '#77b0b1'}},
+                            200: {'label': '200'},
+                            700: {'label': '700'},
+                            1000: {'label': '1000', 'style': {'color': '#f50'}}
+                        }
                     ),
                     dcc.Graph(
                         id='input_id',
                         # figure=get_3D()
                     )
-                ], className="pretty_container seven columns",),
-            ], className="pretty_container"),
+                ], className="pretty_container eight columns",),
+                html.Div(
+                    [dcc.Graph(id="individual_graph", figure=get_domain_host_type_fig())],
+                    className="pretty_container four columns",
+                ),
+            ], className="row flex-display"),
             html.Div(
                 [
                     html.Div(
@@ -544,7 +683,7 @@ def total_content(app):
                         dcc.Markdown('''
                         > 该组件对输入的文本做实时的 **词性划分**，统计词性比例，并显示对应词汇
                         '''),
-                        dcc.Textarea(id='input_testarea_id', value='这是一段测试样例文字', style=dict(width='600px', height='150px')),
+                        dcc.Textarea(id='input_testarea_id', value='这是一段测试样例文字', style=dict(width='500px', height='150px')),
 
                         html.Br(),
                         html.Br(),
@@ -552,12 +691,12 @@ def total_content(app):
                         dcc.Markdown('''                    
                         > 单击右侧属性，显示对应词汇
                         '''),
-                        dcc.Textarea(id='show_word_id', style=dict(width='600px', height='150px')),
+                        dcc.Textarea(id='show_word_id', style=dict(width='500px', height='150px')),
                         dcc.Input(id='hidden_id', type='hidden'),
-                    ], className="pretty_container five columns"),
+                    ], className="pretty_container six columns"),
                     html.Div([
                         dcc.Graph(id="show_pie_id"),
-                    ], className="pretty_container five columns"),
+                    ], className="pretty_container six columns"),
                 ],
                 className="row flex-display",
             ),
@@ -599,16 +738,16 @@ def total_content(app):
 
         fig = px.scatter_3d(df, x="type", y="domain count", z='subdomain count', color='type')
         fig.update_layout(title='Abnormal website',
-                          width=600,
-                          height=500,
+                          # width=600,
+                          # height=500,
                           )
         return fig
 
-    @app.callback(Output('lines-id', 'figure'), [Input('city_name', 'value')])
-    def get_selected_data(selected_citys):
+    @app.callback(Output('lines-id', 'figure'), [Input('city_name', 'value'), Input('date_range', 'start_date'), Input('date_range', 'end_date')])
+    def get_selected_data(selected_citys, start_date, end_date):
         if not isinstance(selected_citys, list):
             selected_citys = [selected_citys]
-        print('selected_citys', selected_citys)
+        # print('selected_citys', selected_citys)
         industries = ['卫生计生', '地方政府', '新闻出版广电', '群众组织及社会团体', '人力资源和社会保障', '旅游', '法院', '统战部', '食品药品监督', '教育', '交通运输',
                       '水利', '科技', '检察院', '国土资源']
         fig = go.Figure()
@@ -617,7 +756,7 @@ def total_content(app):
                 line = dict(width=3, dash='dot')
             else:
                 line = dict(width=3)
-            city_ans = obj.get_city_industries_cnt(city, industries)
+            city_ans = obj.get_city_industries_cnt(city, industries, start_date, end_date)
             fig.add_trace(go.Scatter(x=industries, y=city_ans, name=city, mode='lines+markers', line=line))
         fig.update_layout(title='各地市网站行业数量Top15统计图', xaxis_title='网站行业', yaxis_title='网站数量')
         return fig
@@ -701,7 +840,7 @@ def total_content(app):
 
     @app.callback([Output("show_pie_id", "figure"), Output('hidden_id', 'value')], [Input('input_testarea_id', 'value')])
     def generate_chart(textare):
-        print(textare)
+        # print(textare)
         if not textare:
             textare = '这是一段测试样例文字'
         data = dosegment_all(textare)
@@ -822,12 +961,12 @@ def twice_test(dash_app):
                        State('upload-image', 'filename'),
                        State('upload-image', 'last_modified'))
     def update_output(list_of_contents, list_of_names, list_of_dates):
-        print(list_of_contents)
-        print(list_of_names)
-        print(list_of_dates)
+        # print(list_of_contents)
+        # print(list_of_names)
+        # print(list_of_dates)
         # if list_of_contents is not None:
         #     children = [
         #         parse_contents(c, n, d) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
         import base64
-        print(base64.b64decode(list_of_dates[0]))
+        # print(base64.b64decode(list_of_dates[0]))
         return list_of_contents[0]

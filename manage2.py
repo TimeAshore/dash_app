@@ -31,7 +31,7 @@ dash_app2 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/domain
 dash_app3 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/subdomain/')
 dash_test = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/test/')
 dash_test2 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/test2/', external_stylesheets=external_stylesheets)
-dash_test3 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/total/')
+dash_test3 = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/total/', external_stylesheets=external_stylesheets)
 dtest(dash_app1)
 domain_city_add_content(dash_app2)
 subdomain_dashboard_add_content(dash_app3)
