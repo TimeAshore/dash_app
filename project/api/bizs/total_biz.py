@@ -13,13 +13,14 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
+import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.graph_objects as go
 from sqlalchemy.sql.functions import count
 from sqlalchemy import asc, desc, and_
 
 from .base import BaseBiz
-from ..models import DomainArchived, WebsiteArchived, City, Industry
+from ..models import DomainArchived, WebsiteArchived, City, Industry, WebsiteBanned, WebsiteNews
 from ..bizs.dash_domain_city import DashDomainCityBiz
 from ..bizs.dash_biz import dosegment_all
 
@@ -110,6 +111,13 @@ class TotalBiz(BaseBiz):
             if x[0] not in ['中国', '兰考县']:
                 ans.append(x[0])
         return ans
+
+    def get_statistics(self):
+        domain_archived_count = self.session.query(DomainArchived).count()
+        website_archived_count = self.session.query(WebsiteArchived).count()
+        website_new_count = self.session.query(WebsiteNews).count()
+        website_banned_count = self.session.query(WebsiteBanned).count()
+        return domain_archived_count, website_archived_count, website_new_count, website_banned_count-10000
 
     def get_city_industries_cnt(self, city, industries, start_date, end_date):
         res = self.session.query(WebsiteArchived.industries,
@@ -292,7 +300,6 @@ def get_domain_bar():
     x, y, ratio = dash_domain_obj.get_data()
 
     fig = go.Figure(data=[go.Bar(x=x, y=y, hovertext=ratio)])
-    # Customize aspect
     fig.add_trace(
         go.Scatter(
             x=x,
@@ -301,7 +308,7 @@ def get_domain_bar():
             line=dict(color="#849E68"),
         ))
     fig.update_traces(marker_color='rgb(158,202,225)', marker_line_color='rgb(8,48,107)', marker_line_width=1.5, opacity=0.6)
-    fig.update_layout(title_text='2020年河南省主域名数量分布情况', height=650)
+    fig.update_layout(title_text='2020年河南省主域名数量分布情况', height=650, showlegend=False)
     return fig
 
 
@@ -406,7 +413,7 @@ def clusters():
                   fillcolor="yellow",
                   line_color="yellow",
                   )
-    fig.update_layout(title='黑名单种类')
+    fig.update_layout(title='黑名单种类分布')
 
     # Hide legend
     # fig.update_layout(showlegend=False)
@@ -415,6 +422,7 @@ def clusters():
 
 def total_content(app):
     citys = obj.get_city()
+    domain_archived_count, website_archived_count, website_new_count, website_banned_count = obj.get_statistics()
     app.layout = html.Div(
         [
             dcc.Store(id="aggregate_data"),
@@ -432,7 +440,11 @@ def total_content(app):
                                     "width": "auto",
                                     "margin-bottom": "25px",
                                 },
-                            )
+                            ),
+                            # html.A(
+                            #     html.Button("Related", id="learn-more-button2"),
+                            #     href="https://github.com/TimeAshore/Flask",
+                            # )
                         ],
                         className="one-third column",
                     ),
@@ -456,12 +468,11 @@ def total_content(app):
                     html.Div(
                         [
                             html.A(
-                                html.Button("Learn More", id="learn-more-button"),
-                                href="https://plot.ly/dash/pricing/",
+                                html.Button("Domain >>", id="learn-more-button"),
+                                href="/dashboard/domain/",
                             )
                         ],
                         className="one-third column",
-                        id="button",
                     ),
                 ],
                 id="header",
@@ -472,49 +483,51 @@ def total_content(app):
                 [
                     html.Div(
                         [
-                            dcc.Markdown('''
-                            #### sslkfjsklfls
-                            
-                            - kjskldjfsd
-                            - sjdfkljsldkf
-                            - sjdflksdjf
-                            
-                            '''),
-                            # html.P("Filter by city:", className="control_label"),
-                            # dcc.Dropdown(id='city_name2',
-                            #              value=['洛阳市', '兰考县', '信阳市', '濮阳市', '鹤壁市'],
-                            #              options=[{'value': x, 'label': x} for x in citys],
-                            #              clearable=True,
-                            #              multi=True,
-                            #              className="dcc_control",
-                            #              ),
-                            # html.Br(),
-                            # html.Br(),
-                            # html.P(
-                            #     "Filter by construction date (or select range in histogram):",
-                            #     className="control_label",
-                            # ),
-                            # dcc.RangeSlider(
-                            #     id="year_slider",
-                            #     min=0,
-                            #     max=100,
-                            #     value=[0, 100],
-                            #     className="dcc_control",
-                            # ),
-
-                            html.Br(),
-                            html.Br(),
-                            html.P(
-                                "Filter by http status:",
-                                className="control_label",
-                            ),
-                            dcc.Dropdown(
-                                id="http_statuses",
-                                options=http_status_options,
-                                multi=True,
-                                value=[403, 404, 500, 503],
-                                className="dcc_control",
-                            ),
+                            html.Div([
+                                # html.Br(),
+                                # html.Br(),
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            [html.H4(id="well_text", children=domain_archived_count), html.P("主域名")],
+                                            className="mini_container",
+                                            style=dict(background='#B3DE69')
+                                        ),
+                                        html.Div(
+                                            [html.H4(id="gasText", children=website_archived_count), html.P("子域名")],
+                                            className="mini_container",
+                                            style=dict(background='#e4f5f2')
+                                        ),
+                                        html.Div(
+                                            [html.H4(id="oilText", children=website_new_count), html.P("新发现")],
+                                            className="mini_container",
+                                            style=dict(background='#DCDCDC')
+                                        ),
+                                        html.Div(
+                                            [html.H4(id="waterText", children=website_banned_count), html.P("疑似被黑")],
+                                            className="mini_container",
+                                            style=dict(background='#FFEDA0')
+                                        ),
+                                    ],
+                                    id="info-container",
+                                    className="row container-display",
+                                ),
+                            ]),
+                            html.Div([
+                                html.Br(),
+                                html.Br(),
+                                html.P(
+                                    "Filter by http status:",
+                                    className="control_label",
+                                ),
+                                dcc.Dropdown(
+                                    id="http_statuses",
+                                    options=http_status_options,
+                                    multi=True,
+                                    value=[403, 404, 500, 503],
+                                    className="dcc_control",
+                                ),
+                            ])
                         ],
                         className="pretty_container four columns"
                     ),
@@ -522,7 +535,7 @@ def total_content(app):
                         [
                             html.Div(
                                 [dcc.Graph(id='http_status_bar')],
-                                className="pretty_container",
+                                # className="pretty_container",
                             ),
                         ],
                         className="pretty_container eight columns"
@@ -530,28 +543,6 @@ def total_content(app):
                 ],
                 className="row flex-display",
             ),
-            # html.Div(
-            #     [
-            #         html.Div(
-            #             [
-            #                 html.P(
-            #                     "Filter by construction date (or select range in histogram):",
-            #                     className="control_label",
-            #                 ),
-            #                 dcc.RangeSlider(
-            #                     id="year_slider",
-            #                     min=1960,
-            #                     max=2017,
-            #                     value=[1990, 2010],
-            #                     className="dcc_control",
-            #                 )
-            #             ],
-            #             className="pretty_container four columns",
-            #             id="cross-filter-options"
-            #         )
-            #     ],
-            #     className="row flex-display",
-            # ),
             html.Div(
                 [
                     html.Div(
@@ -604,20 +595,6 @@ def total_content(app):
                 ],
                 className="row flex-display",
             ),
-            # html.Div(
-            #     [
-            #         html.Div(
-            #             [dcc.Graph(id="pie_graph")],
-            #             className="pretty_container seven columns",
-            #         ),
-            #         html.Div(
-            #             [dcc.Graph(id="aggregate_graph"),
-            #              dcc.Graph(id="aggregate_graph2"),],
-            #             className="pretty_container five columns",
-            #         ),
-            #     ],
-            #     className="row flex-display",
-            # ),
             html.Div(
                 [
                     html.Div([
@@ -664,42 +641,42 @@ def total_content(app):
                     className="pretty_container four columns",
                 ),
             ], className="row flex-display"),
-            html.Div(
-                [
-                    html.Div(
-                        [dcc.Graph(id="domain_bar_id", figure=get_domain_bar())],
-                        className="pretty_container seven columns",
-                    ),
-                    html.Div(
-                        [dcc.Graph(id="domain_table_id", figure=get_default())],
-                        className="pretty_container five columns",
-                    ),
-                ],
-                className="row flex-display",
-            ),
-            html.Div(
-                [
-                    html.Div([
-                        dcc.Markdown('''
-                        > 该组件对输入的文本做实时的 **词性划分**，统计词性比例，并显示对应词汇
-                        '''),
-                        dcc.Textarea(id='input_testarea_id', value='这是一段测试样例文字', style=dict(width='500px', height='150px')),
-
-                        html.Br(),
-                        html.Br(),
-                        html.Br(),
-                        dcc.Markdown('''                    
-                        > 单击右侧属性，显示对应词汇
-                        '''),
-                        dcc.Textarea(id='show_word_id', style=dict(width='500px', height='150px')),
-                        dcc.Input(id='hidden_id', type='hidden'),
-                    ], className="pretty_container six columns"),
-                    html.Div([
-                        dcc.Graph(id="show_pie_id"),
-                    ], className="pretty_container six columns"),
-                ],
-                className="row flex-display",
-            ),
+            # html.Div(
+            #     [
+            #         html.Div(
+            #             [dcc.Graph(id="domain_bar_id", figure=get_domain_bar())],
+            #             className="pretty_container seven columns",
+            #         ),
+            #         html.Div(
+            #             [dcc.Graph(id="domain_table_id", figure=get_default())],
+            #             className="pretty_container five columns",
+            #         ),
+            #     ],
+            #     className="row flex-display",
+            # ),
+            # html.Div(
+            #     [
+            #         html.Div([
+            #             dcc.Markdown('''
+            #             > 该组件对输入的文本做实时的 **词性划分**，统计词性比例，并显示对应词汇
+            #             '''),
+            #             dcc.Textarea(id='input_testarea_id', value='这是一段测试样例文字', style=dict(width='500px', height='150px')),
+            #
+            #             html.Br(),
+            #             html.Br(),
+            #             html.Br(),
+            #             dcc.Markdown('''
+            #             > 单击右侧属性，显示对应词汇
+            #             '''),
+            #             dcc.Textarea(id='show_word_id', style=dict(width='500px', height='150px')),
+            #             dcc.Input(id='hidden_id', type='hidden'),
+            #         ], className="pretty_container six columns"),
+            #         html.Div([
+            #             dcc.Graph(id="show_pie_id"),
+            #         ], className="pretty_container six columns"),
+            #     ],
+            #     className="row flex-display",
+            # ),
         ],
         id="mainContainer",
         style={"display": "flex", "flex-direction": "column"},
@@ -783,6 +760,150 @@ def total_content(app):
         fig2.update_layout(title='子域名Top10', xaxis_title='city', yaxis_title='count', height=300)
         return fig1, fig2
 
+    # @app.callback(Output('domain_table_id', 'figure'), [Input('domain_bar_id', 'hoverData'), Input('domain_bar_id', 'figure')])
+    # def show_clickData(hoverData, figure):
+    #     title = figure['layout']['title']['text']
+    #     if '河南省' not in title:
+    #         city_, region_ = re.findall('2020年(.*)主', title)[0], hoverData['points'][0]['label']
+    #         # print(city_, region_)
+    #         ans = dash_domain_obj.get_region_domains(city_, region_)
+    #         number, domain, city, region = [], [], [], []
+    #         for index, x in enumerate(ans):
+    #             number.append(index + 1)
+    #             domain.append(x)
+    #             city.append(city_)
+    #             region.append(region_)
+    #         fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City', 'Region'], align='left'),
+    #                                        cells=dict(values=[number, domain, city, region], align='left'),
+    #                                        )
+    #                               ])
+    #         fig.update_layout(height=650)
+    #         return fig
+    #     else:
+    #         cityName = hoverData['points'][0]['label']
+    #         if cityName is None:
+    #             cityName = '郑州市'
+    #         ans = dash_domain_obj.get_city_domains(cityName)
+    #         number, domain, city = [], [], []
+    #         for index, x in enumerate(ans):
+    #             number.append(index+1)
+    #             domain.append(x)
+    #             city.append(cityName)
+    #         fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City'], align='left'),
+    #                                        cells=dict(values=[number, domain, city], align='left'),
+    #                                        )
+    #                               ])
+    #         fig.update_layout(height=650)
+    #         return fig
+
+    @app.callback(Output('http_status_bar', 'figure'), [Input('http_statuses', 'value')])
+    def getBar(value):
+        if not isinstance(value, list):
+            value = [value]
+
+        city, ans = obj.get_data(value)
+        x = city
+        fig = go.Figure()
+        for index, code in enumerate(value):
+            fig.add_trace(go.Bar(x=x, y=ans[index], name=str(code)))
+        fig.update_layout(title_text='各市区网站状态总览')
+        fig.update_layout(barmode='stack', xaxis={'categoryorder': 'array', 'categoryarray': x})
+        return fig
+
+def add_domain_layout(app):
+    app.layout = html.Div(
+        [
+            dcc.Store(id="aggregate_data"),
+            # empty Div to trigger javascript file for graph resizing
+            html.Div(id="output-clientside"),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Img(
+                                src=app.get_asset_url("dash-logo.png"),
+                                id="plotly-image",
+                                style={
+                                    "height": "60px",
+                                    "width": "auto",
+                                    "margin-bottom": "25px",
+                                },
+                            )
+                        ],
+                        className="one-third column",
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                [
+                                    html.H3(
+                                        "2020河南省域名资产分析",
+                                        style={"margin-bottom": "0px"},
+                                    ),
+                                    html.H5(
+                                        "Production Overview", style={"margin-top": "0px"}
+                                    ),
+                                ]
+                            )
+                        ],
+                        className="one-half column",
+                        id="title",
+                    ),
+                    html.Div(
+                        [
+                            html.A(
+                                html.Button("Subdomain >>", id="learn-more-button"),
+                                href="/dashboard/index/",
+                            )
+                        ],
+                        className="one-third column",
+                    ),
+                ],
+                id="header",
+                className="row flex-display",
+                style={"margin-bottom": "25px"},
+            ),
+            html.Div(
+                [
+                    html.Div(
+                        [dcc.Graph(id="domain_bar_id", figure=get_domain_bar())],
+                        className="pretty_container seven columns",
+                    ),
+                    html.Div(
+                        [dcc.Graph(id="domain_table_id", figure=get_default())],
+                        className="pretty_container five columns",
+                    ),
+                ],
+                className="row flex-display",
+            ),
+            html.Div(
+                [
+                    html.Div([
+                        dcc.Markdown('''
+                        > 该组件对输入的文本做实时的 **词性划分**，统计词性比例，并显示对应词汇
+                        '''),
+                        dcc.Textarea(id='input_testarea_id', value='这是一段测试样例文字', style=dict(width='500px', height='150px')),
+
+                        html.Br(),
+                        html.Br(),
+                        html.Br(),
+                        dcc.Markdown('''                    
+                        > 单击右侧属性，显示对应词汇
+                        '''),
+                        dcc.Textarea(id='show_word_id', style=dict(width='500px', height='150px')),
+                        dcc.Input(id='hidden_id', type='hidden'),
+                    ], className="pretty_container six columns"),
+                    html.Div([
+                        dcc.Graph(id="show_pie_id"),
+                    ], className="pretty_container six columns"),
+                ],
+                className="row flex-display",
+            ),
+        ],
+        id="mainContainer",
+        style={"display": "flex", "flex-direction": "column"},
+    )
+
     @app.callback(Output('domain_table_id', 'figure'), [Input('domain_bar_id', 'hoverData'), Input('domain_bar_id', 'figure')])
     def show_clickData(hoverData, figure):
         title = figure['layout']['title']['text']
@@ -819,20 +940,6 @@ def total_content(app):
             fig.update_layout(height=650)
             return fig
 
-    @app.callback(Output('http_status_bar', 'figure'), [Input('http_statuses', 'value')])
-    def getBar(value):
-        if not isinstance(value, list):
-            value = [value]
-
-        city, ans = obj.get_data(value)
-        x = city
-        fig = go.Figure()
-        for index, code in enumerate(value):
-            fig.add_trace(go.Bar(x=x, y=ans[index], name=str(code)))
-        fig.update_layout(title_text='各市区网站状态分析')
-        fig.update_layout(barmode='stack', xaxis={'categoryorder': 'array', 'categoryarray': x})
-        return fig
-
     @app.callback(Output('domain_bar_id', 'figure'), [Input('domain_bar_id', 'clickData')])
     def show_clickData(clickData):
         fig = dash_domain_obj.get_region_data(clickData['points'][0]['label'])
@@ -840,7 +947,6 @@ def total_content(app):
 
     @app.callback([Output("show_pie_id", "figure"), Output('hidden_id', 'value')], [Input('input_testarea_id', 'value')])
     def generate_chart(textare):
-        # print(textare)
         if not textare:
             textare = '这是一段测试样例文字'
         data = dosegment_all(textare)
@@ -863,56 +969,6 @@ def total_content(app):
             return json.dumps(clickData['points'][0]['label'])
         except:
             return json.dumps('null')
-
-
-def add_test(dash_app):
-    indu_list, domain, subdomain = obj.get_industries_data()
-    t = {'names': indu_list, 'domain count': domain, 'subdomain count': subdomain}
-    df = pd.DataFrame(t)
-    fig = px.scatter(df, x="domain count", y="subdomain count",
-                     size="domain count", color="names",
-                     hover_name="names", log_x=True, height=650)
-    dash_app.layout = html.Div([
-        html.Div([
-            html.Div([
-                dcc.Graph(id='input_id22', figure=fig)
-            ], style=dict(width='49%', display='inline-block', )),
-            # 设置交互的子图表
-            html.Div([
-                dcc.Graph(id='x-time-series'),
-                dcc.Graph(id='y-time-series'),
-            ], style=dict(width='49%', display='inline-block', padding='0px')),
-        ]),
-        html.Div([
-            dcc.Graph(
-                id='input_id',
-                figure=get_3D()
-            )
-        ])
-    ])
-
-    @dash_app.callback(Output('x-time-series', 'figure'), Output('y-time-series', 'figure'),
-                       [Input('input_id22', 'hoverData')])
-    def click_change(hoverData=None):
-        if hoverData is None:
-            name = '财政'
-        else:
-            name = hoverData['points'][0]['hovertext']
-        citys = ['郑州市', '省直', '洛阳市', '新乡市', '南阳市', '安阳市', '信阳市', '开封市', '焦作市', '商丘市']
-        domainCnt1, domainCnt2 = obj.get_lines_data(citys, name)
-        JunZhi1 = [sum(domainCnt1) // len(domainCnt1)] * len(domainCnt1)
-        JunZhi2 = [sum(domainCnt2) // len(domainCnt2)] * len(domainCnt2)
-
-        fig1 = go.Figure()
-        fig1.add_trace(go.Scatter(x=citys, y=domainCnt1, mode='lines+markers', name=name, line=dict(width=3)))
-        fig1.add_trace(go.Scatter(x=citys, y=JunZhi1, mode='lines', name='均值', line=dict(width=2)))
-        fig1.update_layout(title='主域名Top10', xaxis_title='city', yaxis_title='count', height=300)
-
-        fig2 = go.Figure()
-        fig2.add_trace(go.Scatter(x=citys, y=domainCnt2, mode='lines+markers', name=name, line=dict(width=3)))
-        fig2.add_trace(go.Scatter(x=citys, y=JunZhi2, mode='lines', name='均值', line=dict(width=2)))
-        fig2.update_layout(title='子域名Top10', xaxis_title='city', yaxis_title='count', height=300)
-        return fig1, fig2
 
 
 def twice_test(dash_app):

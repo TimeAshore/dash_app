@@ -361,54 +361,54 @@ def get_3D():
     return fig
 
 
-def add_test(dash_app):
-    indu_list, domain, subdomain = obj.get_industries_data()
-    t = {'names': indu_list, 'domain count': domain, 'subdomain count': subdomain}
-    df = pd.DataFrame(t)
-    fig = px.scatter(df, x="domain count", y="subdomain count",
-                     size="domain count", color="names",
-                     hover_name="names", log_x=True, height=650)
-    dash_app.layout = html.Div([
-        html.Div([
-            html.Div([
-                dcc.Graph(id='input_id22', figure=fig)
-            ], style=dict(width='49%', display='inline-block', )),
-            # 设置交互的子图表
-            html.Div([
-                dcc.Graph(id='x-time-series'),
-                dcc.Graph(id='y-time-series'),
-            ], style=dict(width='49%', display='inline-block', padding='0px')),
-        ]),
-        html.Div([
-            dcc.Graph(
-                id='input_id',
-                figure=get_3D()
-            )
-        ])
-    ])
-
-    @dash_app.callback(Output('x-time-series', 'figure'), Output('y-time-series', 'figure'),
-                       [Input('input_id22', 'hoverData')])
-    def click_change(hoverData=None):
-        if hoverData is None:
-            name = '财政'
-        else:
-            name = hoverData['points'][0]['hovertext']
-        citys = ['郑州市', '省直', '洛阳市', '新乡市', '南阳市', '安阳市', '信阳市', '开封市', '焦作市', '商丘市']
-        domainCnt1, domainCnt2 = obj.get_lines_data(citys, name)
-        JunZhi1 = [sum(domainCnt1) // len(domainCnt1)] * len(domainCnt1)
-        JunZhi2 = [sum(domainCnt2) // len(domainCnt2)] * len(domainCnt2)
-
-        fig1 = go.Figure()
-        fig1.add_trace(go.Scatter(x=citys, y=domainCnt1, mode='lines+markers', name=name, line=dict(width=3)))
-        fig1.add_trace(go.Scatter(x=citys, y=JunZhi1, mode='lines', name='均值', line=dict(width=2)))
-        fig1.update_layout(title='主域名Top10', xaxis_title='city', yaxis_title='count', height=300)
-
-        fig2 = go.Figure()
-        fig2.add_trace(go.Scatter(x=citys, y=domainCnt2, mode='lines+markers', name=name, line=dict(width=3)))
-        fig2.add_trace(go.Scatter(x=citys, y=JunZhi2, mode='lines', name='均值', line=dict(width=2)))
-        fig2.update_layout(title='子域名Top10', xaxis_title='city', yaxis_title='count', height=300)
-        return fig1, fig2
+# def add_test(dash_app):
+#     indu_list, domain, subdomain = obj.get_industries_data()
+#     t = {'names': indu_list, 'domain count': domain, 'subdomain count': subdomain}
+#     df = pd.DataFrame(t)
+#     fig = px.scatter(df, x="domain count", y="subdomain count",
+#                      size="domain count", color="names",
+#                      hover_name="names", log_x=True, height=650)
+#     dash_app.layout = html.Div([
+#         html.Div([
+#             html.Div([
+#                 dcc.Graph(id='input_id22', figure=fig)
+#             ], style=dict(width='49%', display='inline-block', )),
+#             # 设置交互的子图表
+#             html.Div([
+#                 dcc.Graph(id='x-time-series'),
+#                 dcc.Graph(id='y-time-series'),
+#             ], style=dict(width='49%', display='inline-block', padding='0px')),
+#         ]),
+#         html.Div([
+#             dcc.Graph(
+#                 id='input_id',
+#                 figure=get_3D()
+#             )
+#         ])
+#     ])
+#
+#     @dash_app.callback(Output('x-time-series', 'figure'), Output('y-time-series', 'figure'),
+#                        [Input('input_id22', 'hoverData')])
+#     def click_change(hoverData=None):
+#         if hoverData is None:
+#             name = '财政'
+#         else:
+#             name = hoverData['points'][0]['hovertext']
+#         citys = ['郑州市', '省直', '洛阳市', '新乡市', '南阳市', '安阳市', '信阳市', '开封市', '焦作市', '商丘市']
+#         domainCnt1, domainCnt2 = obj.get_lines_data(citys, name)
+#         JunZhi1 = [sum(domainCnt1) // len(domainCnt1)] * len(domainCnt1)
+#         JunZhi2 = [sum(domainCnt2) // len(domainCnt2)] * len(domainCnt2)
+#
+#         fig1 = go.Figure()
+#         fig1.add_trace(go.Scatter(x=citys, y=domainCnt1, mode='lines+markers', name=name, line=dict(width=3)))
+#         fig1.add_trace(go.Scatter(x=citys, y=JunZhi1, mode='lines', name='均值', line=dict(width=2)))
+#         fig1.update_layout(title='主域名Top10', xaxis_title='city', yaxis_title='count', height=300)
+#
+#         fig2 = go.Figure()
+#         fig2.add_trace(go.Scatter(x=citys, y=domainCnt2, mode='lines+markers', name=name, line=dict(width=3)))
+#         fig2.add_trace(go.Scatter(x=citys, y=JunZhi2, mode='lines', name='均值', line=dict(width=2)))
+#         fig2.update_layout(title='子域名Top10', xaxis_title='city', yaxis_title='count', height=300)
+#         return fig1, fig2
 
 
 def twice_test(dash_app):
@@ -466,3 +466,65 @@ def twice_test(dash_app):
         import base64
         print(base64.b64decode(list_of_dates[0]))
         return list_of_contents[0]
+
+
+import dash_bootstrap_components as dbc
+
+
+def add_test(dash_app):
+    dash_app.layout = html.Div([
+        dbc.Card(
+            [
+                html.H2("70.13%", className="card-title"),
+                html.P("Model Test Accuracy", className="card-text"),
+            ],
+            body=True,
+            color="success",
+            inverse=True,
+        ),
+        dbc.Card(
+            [
+                html.H2("70.13%", className="card-title"),
+                html.P("Model Test Accuracy", className="card-text"),
+            ],
+            body=True,
+            color="primary",
+            inverse=True,
+        ),
+        dbc.Card(
+            [
+                html.H2("70.13%", className="card-title"),
+                html.P("Model Test Accuracy", className="card-text"),
+            ],
+            body=True,
+            color="secondary",
+            inverse=True,
+        ),
+        dbc.Card(
+            [
+                html.H2("70.13%", className="card-title"),
+                html.P("Model Test Accuracy", className="card-text"),
+            ],
+            body=True,
+            color="info",
+            inverse=True,
+        ),
+        dbc.Card(
+            [
+                html.H2("70.13%", className="card-title"),
+                html.P("Model Test Accuracy", className="card-text"),
+            ],
+            body=True,
+            color="warning",
+            inverse=True,
+        ),
+        dbc.Card(
+            [
+                html.H2("70.13%", className="card-title"),
+                html.P("Model Test Accuracy", className="card-text"),
+            ],
+            body=True,
+            color="danger",
+            inverse=True,
+        ),
+    ])  # primary, secondary, success, info, warning, danger,
