@@ -498,11 +498,11 @@ def total_content(app):
                                             className="mini_container",
                                             style=dict(background='#e4f5f2')
                                         ),
-                                        html.Div(
-                                            [html.H4(id="oilText", children=website_new_count), html.P("新发现")],
-                                            className="mini_container",
-                                            style=dict(background='#DCDCDC')
-                                        ),
+                                        # html.Div(
+                                        #     [html.H4(id="oilText", children=website_new_count), html.P("新发现")],
+                                        #     className="mini_container",
+                                        #     style=dict(background='#DCDCDC')
+                                        # ),
                                         html.Div(
                                             [html.H4(id="waterText", children=website_banned_count), html.P("疑似被黑")],
                                             className="mini_container",
@@ -590,7 +590,7 @@ def total_content(app):
                                 className="pretty_container",
                             ),
                         ],
-                        className="eight columns",
+                        className="pretty_container eight columns",
                     ),
                 ],
                 className="row flex-display",
