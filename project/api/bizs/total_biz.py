@@ -6,6 +6,7 @@ import jieba
 import jieba.analyse
 import jieba.posseg
 import json
+import dash_table
 from datetime import date
 import random
 import pandas as pd
@@ -60,7 +61,8 @@ class TotalBiz(BaseBiz):
         for code in value:
             temp = []
             for x in city:
-                res = self.session.query(WebsiteArchived.http_status, count(WebsiteArchived.http_status).label('http_cnt')) \
+                res = self.session.query(WebsiteArchived.http_status,
+                                         count(WebsiteArchived.http_status).label('http_cnt')) \
                     .filter_by(city_code=x).group_by(WebsiteArchived.http_status).order_by(desc('http_cnt')).all()
                 for http in res:
                     if http[0] == int(code):
@@ -112,17 +114,34 @@ class TotalBiz(BaseBiz):
                 ans.append(x[0])
         return ans
 
+    def get_sponsor_type(self):
+        ans = ['司法鉴定机构',
+               '基金会',
+               '国防机构',
+               '群众性团体组织',
+               '政府机关',
+               '社会团体',
+               '事业单位',
+               '个人',
+               '企业',
+               '民办非企业单位',
+               '宗教团体',
+               '律师执业机构',
+               ]
+        return ans
+
     def get_statistics(self):
         domain_archived_count = self.session.query(DomainArchived).count()
         website_archived_count = self.session.query(WebsiteArchived).count()
         website_new_count = self.session.query(WebsiteNews).count()
         website_banned_count = self.session.query(WebsiteBanned).count()
-        return domain_archived_count, website_archived_count, website_new_count, website_banned_count-10000
+        return domain_archived_count, website_archived_count, website_new_count, website_banned_count - 10000
 
     def get_city_industries_cnt(self, city, industries, start_date, end_date):
         res = self.session.query(WebsiteArchived.industries,
                                  count(WebsiteArchived.industries).label('industries_cnt')).filter(and_(
-            WebsiteArchived.city_code == city, WebsiteArchived.create_time > start_date, WebsiteArchived.create_time < end_date
+            WebsiteArchived.city_code == city, WebsiteArchived.create_time > start_date,
+            WebsiteArchived.create_time < end_date
         )).group_by(WebsiteArchived.industries).all()
         ans = []
         for industrie in industries:
@@ -205,7 +224,7 @@ def get_http_code_fig():
     l[4] += 20
 
     labels = ["HTTP Status Code", "2xx", "3xx", "4xx", "5xx", "200", "202", "301", "302", "307", "400", "401", "403",
-     "404", '408', '500', '502', '503']
+              "404", '408', '500', '502', '503']
     fig = go.Figure(go.Sunburst(
         labels=labels,
         parents=["", "HTTP Status Code", "HTTP Status Code", "HTTP Status Code", "HTTP Status Code", "2xx", "2xx",
@@ -290,7 +309,8 @@ def get_default():
         domain.append(x)
         city.append(cityName)
     fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City'], align='left'),
-                                   cells=dict(values=[number, domain, city], align='left'))
+                                   cells=dict(values=[number, domain, city], align='left'),
+                                   columnwidth=[3, 6, 5])
                           ])
     fig.update_layout(height=650)
     return fig
@@ -303,11 +323,12 @@ def get_domain_bar():
     fig.add_trace(
         go.Scatter(
             x=x,
-            y=[i//2 for i in y],
+            y=[i // 2 for i in y],
             mode='lines',
             line=dict(color="#849E68"),
         ))
-    fig.update_traces(marker_color='rgb(158,202,225)', marker_line_color='rgb(8,48,107)', marker_line_width=1.5, opacity=0.6)
+    fig.update_traces(marker_color='rgb(158,202,225)', marker_line_color='rgb(8,48,107)', marker_line_width=1.5,
+                      opacity=0.6)
     fig.update_layout(title_text='2020年河南省主域名数量分布情况', height=650, showlegend=False)
     return fig
 
@@ -357,7 +378,6 @@ def clusters():
     fig.add_trace(go.Scatter(x=x4, y=y4, mode="markers", name='企业邮箱'))
     fig.add_trace(go.Scatter(x=x5, y=y5, mode="markers", name='WAF拦截'))
 
-
     # fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='被黑-色情'))
     # fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='网站关闭'))
     # fig.add_trace(go.Scatter(x=x2, y=y2, mode="markers", name='微信接口'))
@@ -395,7 +415,7 @@ def clusters():
                   x1=max(x3), y1=max(y3),
                   opacity=0.2,
                   fillcolor="gold",
-                  line_color="gold",#'gold', 'mediumturquoise', 'darkorange', 'lightgreen'
+                  line_color="gold",  # 'gold', 'mediumturquoise', 'darkorange', 'lightgreen'
                   )
     fig.add_shape(type="circle",
                   xref="x", yref="y",
@@ -515,7 +535,9 @@ def total_content(app):
                             ]),
                             html.Div([
                                 html.Br(),
-                                html.Br(),
+                                dcc.Markdown('''
+                                            > 网站状态分析
+                                            '''),
                                 html.P(
                                     "Filter by http status:",
                                     className="control_label",
@@ -559,6 +581,9 @@ def total_content(app):
                 [
                     html.Div(
                         [
+                            dcc.Markdown('''
+                            > 网站行业分析
+                            '''),
                             html.P("Filter by found date:", className="control_label"),
                             dcc.DatePickerRange(
                                 id='date_range',
@@ -587,7 +612,7 @@ def total_content(app):
                         [
                             html.Div(
                                 [dcc.Graph(id="lines-id")],
-                                className="pretty_container",
+                                # className="pretty_container",
                             ),
                         ],
                         className="pretty_container eight columns",
@@ -635,7 +660,7 @@ def total_content(app):
                         id='input_id',
                         # figure=get_3D()
                     )
-                ], className="pretty_container eight columns",),
+                ], className="pretty_container eight columns", ),
                 html.Div(
                     [dcc.Graph(id="individual_graph", figure=get_domain_host_type_fig())],
                     className="pretty_container four columns",
@@ -720,7 +745,8 @@ def total_content(app):
                           )
         return fig
 
-    @app.callback(Output('lines-id', 'figure'), [Input('city_name', 'value'), Input('date_range', 'start_date'), Input('date_range', 'end_date')])
+    @app.callback(Output('lines-id', 'figure'),
+                  [Input('city_name', 'value'), Input('date_range', 'start_date'), Input('date_range', 'end_date')])
     def get_selected_data(selected_citys, start_date, end_date):
         if not isinstance(selected_citys, list):
             selected_citys = [selected_citys]
@@ -738,7 +764,8 @@ def total_content(app):
         fig.update_layout(title='各地市网站行业数量Top15统计图', xaxis_title='网站行业', yaxis_title='网站数量')
         return fig
 
-    @app.callback(Output('x-time-series', 'figure'), Output('y-time-series', 'figure'), [Input('input_id22', 'hoverData')])
+    @app.callback(Output('x-time-series', 'figure'), Output('y-time-series', 'figure'),
+                  [Input('input_id22', 'hoverData')])
     def click_change(hoverData=None):
         if hoverData is None:
             name = '财政'
@@ -750,51 +777,17 @@ def total_content(app):
         JunZhi2 = [sum(domainCnt2) // len(domainCnt2)] * len(domainCnt2)
 
         fig1 = go.Figure()
-        fig1.add_trace(go.Scatter(x=citys, y=domainCnt1, mode='lines+markers', name=name, line=dict(width=3, shape="spline", color="#F9ADA0")))
+        fig1.add_trace(go.Scatter(x=citys, y=domainCnt1, mode='lines+markers', name=name,
+                                  line=dict(width=3, shape="spline", color="#F9ADA0")))
         fig1.add_trace(go.Scatter(x=citys, y=JunZhi1, mode='lines', name='均值', line=dict(width=2, shape="spline")))
         fig1.update_layout(title='主域名Top10', xaxis_title='city', yaxis_title='count', height=300)
 
         fig2 = go.Figure()
-        fig2.add_trace(go.Scatter(x=citys, y=domainCnt2, mode='lines+markers', name=name, line=dict(width=3, shape="spline", color="#59C3C3")))
+        fig2.add_trace(go.Scatter(x=citys, y=domainCnt2, mode='lines+markers', name=name,
+                                  line=dict(width=3, shape="spline", color="#59C3C3")))
         fig2.add_trace(go.Scatter(x=citys, y=JunZhi2, mode='lines', name='均值', line=dict(width=2, shape="spline")))
         fig2.update_layout(title='子域名Top10', xaxis_title='city', yaxis_title='count', height=300)
         return fig1, fig2
-
-    # @app.callback(Output('domain_table_id', 'figure'), [Input('domain_bar_id', 'hoverData'), Input('domain_bar_id', 'figure')])
-    # def show_clickData(hoverData, figure):
-    #     title = figure['layout']['title']['text']
-    #     if '河南省' not in title:
-    #         city_, region_ = re.findall('2020年(.*)主', title)[0], hoverData['points'][0]['label']
-    #         # print(city_, region_)
-    #         ans = dash_domain_obj.get_region_domains(city_, region_)
-    #         number, domain, city, region = [], [], [], []
-    #         for index, x in enumerate(ans):
-    #             number.append(index + 1)
-    #             domain.append(x)
-    #             city.append(city_)
-    #             region.append(region_)
-    #         fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City', 'Region'], align='left'),
-    #                                        cells=dict(values=[number, domain, city, region], align='left'),
-    #                                        )
-    #                               ])
-    #         fig.update_layout(height=650)
-    #         return fig
-    #     else:
-    #         cityName = hoverData['points'][0]['label']
-    #         if cityName is None:
-    #             cityName = '郑州市'
-    #         ans = dash_domain_obj.get_city_domains(cityName)
-    #         number, domain, city = [], [], []
-    #         for index, x in enumerate(ans):
-    #             number.append(index+1)
-    #             domain.append(x)
-    #             city.append(cityName)
-    #         fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City'], align='left'),
-    #                                        cells=dict(values=[number, domain, city], align='left'),
-    #                                        )
-    #                               ])
-    #         fig.update_layout(height=650)
-    #         return fig
 
     @app.callback(Output('http_status_bar', 'figure'), [Input('http_statuses', 'value')])
     def getBar(value):
@@ -809,6 +802,31 @@ def total_content(app):
         fig.update_layout(title_text='各市区网站状态总览')
         fig.update_layout(barmode='stack', xaxis={'categoryorder': 'array', 'categoryarray': x})
         return fig
+
+
+def generate_table(data=[]):
+    return dash_table.DataTable(
+        id="table",
+        sort_action="native",
+        filter_action="native",
+        # css={
+        #     "rule": "display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;"
+        # },
+        # style_data={"whiteSpace": "normal"},
+        style_cell={
+            "padding": "15px",
+            # "midWidth": "0px",
+            # "width": "25%",
+            "textAlign": "left",
+            "border": "white",
+        },
+        style_cell_conditional=[
+            {"if": {"row_index": "even"}, "backgroundColor": "#f9f9f9"}
+        ],
+        columns=[{"name": i, "id": i} for i in ['Name', 'City', 'Region', 'Sponsor', 'Sponsor Type', 'ICP number', 'Source', 'Create Time']],
+        data=data
+    )
+
 
 def add_domain_layout(app):
     app.layout = html.Div(
@@ -866,6 +884,67 @@ def add_domain_layout(app):
             html.Div(
                 [
                     html.Div(
+                        [
+                            html.Div([
+                                dcc.Markdown('''
+                        > **主域名列表**
+                        '''),
+                                html.Div(
+                                    [html.P("主域名:"),
+                                     dcc.Input(id='domain_name_id',
+                                               value='',
+                                               placeholder='zhengzhou.gov.cn'
+                                               )
+                                     ], style=dict(width='15%', display='inline-block', padding='0px 0px 0px 0px')
+                                ),
+                                html.Div(
+                                    [html.P("备案单位:"),
+                                     dcc.Input(id='domain_sponsor_id', )
+                                     ], style=dict(width='15%', display='inline-block', padding='0px 0px 0px 0px')
+                                ),
+                                html.Div([
+                                    html.P("创建时间:"),
+                                    dcc.DatePickerRange(
+                                        id='domain_create_time_id',
+                                        min_date_allowed=date(2015, 1, 1),
+                                        max_date_allowed=date(2022, 1, 1),
+                                        initial_visible_month=date(2020, 5, 1),
+                                        start_date=date(2019, 1, 30),
+                                        end_date=date(2020, 7, 30)
+                                    ),
+                                ], style=dict(width='25%', display='inline-block', padding='0px 0px 0px 0px')),
+                                html.Div(
+                                    [
+                                        html.P("城市:"),
+                                        dcc.Dropdown(id='domain_city_id',
+                                                     value='郑州市',
+                                                     options=[{'label': x, 'value': x} for x in obj.get_city()],
+                                                     clearable=True,
+                                                     # className="dcc_control",
+                                                     )
+                                    ], style=dict(width='15%', display='inline-block')
+                                ),
+                                html.Div(
+                                    [html.P("单位类型:"),
+                                     dcc.Dropdown(id='domain_sponsor_type_id',
+                                                  options=[{'label': x, 'value': x} for x in obj.get_sponsor_type()],
+                                                  clearable=True
+                                                  )
+                                     ], style=dict(width='15%', display='inline-block', padding='0px 0px 0px 50px')
+                                ),
+                            ]),
+                        ],
+                        className="pretty_container",
+                    ),
+                    html.Div([
+                        html.Div(id="las-table", children=generate_table()),
+                        html.Div(id="las-table-print"),
+                    ], className="section page", ),
+                ], className="pretty_container",
+            ),
+            html.Div(
+                [
+                    html.Div(
                         [dcc.Graph(id="domain_bar_id", figure=get_domain_bar())],
                         className="pretty_container seven columns",
                     ),
@@ -904,6 +983,27 @@ def add_domain_layout(app):
         style={"display": "flex", "flex-direction": "column"},
     )
 
+    @app.callback(Output('las-table', 'children'), [Input('domain_name_id', 'value'), Input('domain_city_id', 'value'),
+                                                    Input('domain_sponsor_id', 'value'), Input('domain_sponsor_type_id', 'value'),
+                                                    Input('domain_create_time_id', 'start_date'), Input('domain_create_time_id', 'end_date'),
+                                                    ])
+    def table_update(domain_name, domain_city, domain_sponsor, domain_sponsor_type, start_date, end_date):
+        print(domain_name, domain_city, domain_sponsor, domain_sponsor_type, start_date, end_date)
+        ans = dash_domain_obj.query_table_data(domain_name, domain_city, domain_sponsor, domain_sponsor_type, start_date, end_date)
+        data = []
+        for x in ans['records']:
+            data.append({
+                'Name': x['name'],
+                'City': x['city_code'],
+                'Region': x['region_code'],
+                'Sponsor': x['sponsor'],
+                'Sponsor Type': x['sponsor_type'],
+                'ICP number': x['icp_number'],
+                'Source': x['icp_source'],
+                'Create Time': x['create_time'],
+            })
+        return generate_table(data)
+
     @app.callback(Output('domain_table_id', 'figure'), [Input('domain_bar_id', 'hoverData'), Input('domain_bar_id', 'figure')])
     def show_clickData(hoverData, figure):
         title = figure['layout']['title']['text']
@@ -919,6 +1019,7 @@ def add_domain_layout(app):
                 region.append(region_)
             fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City', 'Region'], align='left'),
                                            cells=dict(values=[number, domain, city, region], align='left'),
+                                           columnwidth=[3, 6, 5, 5]
                                            )
                                   ])
             fig.update_layout(height=650)
@@ -930,11 +1031,12 @@ def add_domain_layout(app):
             ans = dash_domain_obj.get_city_domains(cityName)
             number, domain, city = [], [], []
             for index, x in enumerate(ans):
-                number.append(index+1)
+                number.append(index + 1)
                 domain.append(x)
                 city.append(cityName)
             fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City'], align='left'),
                                            cells=dict(values=[number, domain, city], align='left'),
+                                           columnwidth=[3, 6, 5]
                                            )
                                   ])
             fig.update_layout(height=650)
@@ -945,7 +1047,8 @@ def add_domain_layout(app):
         fig = dash_domain_obj.get_region_data(clickData['points'][0]['label'])
         return fig
 
-    @app.callback([Output("show_pie_id", "figure"), Output('hidden_id', 'value')], [Input('input_testarea_id', 'value')])
+    @app.callback([Output("show_pie_id", "figure"), Output('hidden_id', 'value')],
+                  [Input('input_testarea_id', 'value')])
     def generate_chart(textare):
         if not textare:
             textare = '这是一段测试样例文字'
@@ -954,7 +1057,7 @@ def add_domain_layout(app):
         values = [data[x]['cnt'] for x in data]
 
         fig = go.Figure(data=[go.Pie(labels=labels, values=values,
-                                    marker=dict(colors=[WELL_COLORS[i] for i in WELL_COLORS]),
+                                     marker=dict(colors=[WELL_COLORS[i] for i in WELL_COLORS]),
                                      )])
         return fig, str(data)
 

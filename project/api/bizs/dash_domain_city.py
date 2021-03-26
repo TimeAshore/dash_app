@@ -78,6 +78,38 @@ class DashDomainCityBiz(BaseBiz):
         fig.update_layout(title_text=f'2020年{city}主域名分布情况')
         return fig
 
+    def _build_query_filter(self, query, condition, strict=False):
+        if condition.get('domain_name'):
+            query = query.filter(self.model.name.ilike(condition['domain_name'] + '%'))
+        if condition.get('city'):
+            query = query.filter(self.model.city_code == condition['city'])
+        if condition.get('domain_sponsor'):
+            query = query.filter(self.model.sponsor.like('%' + condition['domain_sponsor'] + '%'))
+        if condition.get('sponsor_type'):
+            query = query.filter(self.model.sponsor_type == condition['sponsor_type'])
+        if condition.get('start_date'):
+            query = query.filter(and_(self.model.create_time > condition['start_date'], self.model.create_time < condition['end_date']))
+        if condition.get('only_icp') is True:
+            query = query.filter(self.model.sponsor.notin_(['未备案', '']))
+        if 'only_national_level' in condition:
+            query = query.filter(self.model.national_level.is_(condition['only_national_level']))
+        return query
+
+    def query_table_data(self, domain_name, city, domain_sponsor, sponsor_type, start_date, end_date):
+        payload = {
+            'filter': { 
+                'domain_name': domain_name,
+                'city': city,
+                'domain_sponsor': domain_sponsor,
+                'sponsor_type': sponsor_type,
+                'start_date': start_date,
+                'end_date': end_date,
+            }
+        }
+        query = self.session.query(self.model)
+        result = self.base_query(query, **payload)
+        return result
+
 
 obj = DashDomainCityBiz()
 

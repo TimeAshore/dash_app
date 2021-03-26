@@ -141,3 +141,126 @@ body {
   pointer-events: all;
   transform: translate(30px, 349px);
 }
+
+
+#las-table {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+#las-table table, #las-table-print table {
+    font-family: aktiv-grotesk-thin,sans-serif;
+}
+
+#las-table-print {
+    display: none;
+}
+
+#las-table {
+    padding: 10px !important;
+    text-align: center !important;
+}
+
+#las-table span {
+    display: inline-block;
+}
+
+#las-table span.sort {
+    font-size: 20pt;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+#las-table th.dash-header, #las-table th.dash-filter, #las-table th.dash-delete-header, #las-table tr:nth-child(2) > th:nth-child(1) {
+    position: sticky !important;
+    left: 0px;
+    background-color: white !important;
+    text-transform: lowercase;
+    font-variant: all-small-caps;
+    font-color: #232323;
+    font-size: 20pt;
+    padding-bottom: 20px;
+    box-shadow: none !important;
+}
+
+#las-table th.dash-header, #las-table th.dash-delete-header {
+    top: -10px;
+}
+
+#las-table th.dash-header {
+    color: #c3c3c3;
+    font-stretch: condensed;
+}
+
+#las-table th.dash-header > div {
+    margin: auto;
+    display: inline-block;
+}
+
+#las-table ::-webkit-scrollbar {
+    width: 4px;
+    height: 0px;
+    margin-right: 500px;
+    background-color: #191A1C;
+}
+
+#las-table ::-webkit-scrollbar-thumb {
+    width: 2px;
+    background-color: #E4E4E4;
+    border-radius:15px;
+    padding-right:5px;
+}
+
+
+#las-table th.dash-filter, #las-table tr:nth-child(2) > th:nth-child(1) {
+    top: 50px;
+}
+
+#las-table th.dash-filter input {
+    border-bottom: solid 1px #d3d3d3;
+    font-size: 10pt;
+    text-align: center;
+}
+
+#las-table .dash-spreadsheet-container .dash-spreadsheet-inner td.dash-cell.column-0 {
+    width:0px !important;
+}
+
+#las-table .dash-spreadsheet-container .dash-spreadsheet-inner td.dash-cell.column-1 .dash-cell-value {
+    width: 100 !important;
+}
+
+#las-table td.dash-delete-cell {
+    width: 20px !important;
+    background-color: white;
+    text-align: center;
+}
+
+#las-table tr td {
+    box-shadow: inset 0px 0px 0px 0px #d3d3d3 !important;
+}
+
+
+.section {
+    margin: 50px;
+    padding: 10px;
+    min-width: 850px;
+}
+
+.section-title {
+    background-color: #0157A0;
+    color: white;
+    width: calc(100% - 80px);
+    display: inline-block;
+    padding: 10px;
+    padding-left: 70px;
+    font-size: 20pt;
+    font-weight: 100 !important;
+    z-index: 100 !important;
+}
+
+
+.page {
+    padding: 50px;
+    background-color: white;
+}
