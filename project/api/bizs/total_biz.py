@@ -310,7 +310,7 @@ def get_default():
         city.append(cityName)
     fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City'], align='left'),
                                    cells=dict(values=[number, domain, city], align='left'),
-                                   columnwidth=[3, 6, 5])
+                                   columnwidth=[4, 10, 5])
                           ])
     fig.update_layout(height=650)
     return fig
@@ -808,7 +808,7 @@ def generate_table(data=[]):
     return dash_table.DataTable(
         id="table",
         sort_action="native",
-        filter_action="native",
+        # filter_action="native",
         # css={
         #     "rule": "display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;"
         # },
@@ -819,6 +819,10 @@ def generate_table(data=[]):
             # "width": "25%",
             "textAlign": "left",
             "border": "white",
+            'font-size': 'x-small'
+        },
+        style_header={
+            'fontWeight': 'bold'
         },
         style_cell_conditional=[
             {"if": {"row_index": "even"}, "backgroundColor": "#f9f9f9"}
@@ -887,23 +891,23 @@ def add_domain_layout(app):
                         [
                             html.Div([
                                 dcc.Markdown('''
-                        > **主域名列表**
-                        '''),
+                                > **主域名列表**
+                                '''),
                                 html.Div(
-                                    [html.P("主域名:"),
+                                    [html.P("Domain:"),
                                      dcc.Input(id='domain_name_id',
                                                value='',
                                                placeholder='zhengzhou.gov.cn'
                                                )
-                                     ], style=dict(width='15%', display='inline-block', padding='0px 0px 0px 0px')
+                                     ], style=dict(width='33%', display='inline-block', padding='0px 0px 0px 0px')
                                 ),
                                 html.Div(
-                                    [html.P("备案单位:"),
+                                    [html.P("Sponsor:"),
                                      dcc.Input(id='domain_sponsor_id', )
-                                     ], style=dict(width='15%', display='inline-block', padding='0px 0px 0px 0px')
+                                     ], style=dict(width='33%', display='inline-block', padding='0px 0px 0px 0px')
                                 ),
                                 html.Div([
-                                    html.P("创建时间:"),
+                                    html.P("Create Time:"),
                                     dcc.DatePickerRange(
                                         id='domain_create_time_id',
                                         min_date_allowed=date(2015, 1, 1),
@@ -912,34 +916,37 @@ def add_domain_layout(app):
                                         start_date=date(2019, 1, 30),
                                         end_date=date(2020, 7, 30)
                                     ),
-                                ], style=dict(width='25%', display='inline-block', padding='0px 0px 0px 0px')),
+                                ], style=dict(width='33%', display='inline-block', padding='0px 0px 0px 0px')),
+                            ]),
+                            html.Div([
                                 html.Div(
                                     [
-                                        html.P("城市:"),
+                                        html.P("City:"),
                                         dcc.Dropdown(id='domain_city_id',
                                                      value='郑州市',
                                                      options=[{'label': x, 'value': x} for x in obj.get_city()],
                                                      clearable=True,
                                                      # className="dcc_control",
                                                      )
-                                    ], style=dict(width='15%', display='inline-block')
+                                    ], style=dict(width='40%', display='inline-block')
                                 ),
                                 html.Div(
-                                    [html.P("单位类型:"),
+                                    [html.P("Sponsor Type:"),
                                      dcc.Dropdown(id='domain_sponsor_type_id',
                                                   options=[{'label': x, 'value': x} for x in obj.get_sponsor_type()],
                                                   clearable=True
                                                   )
-                                     ], style=dict(width='15%', display='inline-block', padding='0px 0px 0px 50px')
+                                     ], style=dict(width='40%', display='inline-block', padding='0px 0px 0px 200px')
                                 ),
-                            ]),
+                            ])
                         ],
                         className="pretty_container",
                     ),
-                    html.Div([
-                        html.Div(id="las-table", children=generate_table()),
-                        html.Div(id="las-table-print"),
-                    ], className="section page", ),
+                    html.Div(id="las-table", children=generate_table()),
+                    html.Div(id="las-table-print"),
+                    # html.Div([
+                    #
+                    # ], className="section page", ),
                 ], className="pretty_container",
             ),
             html.Div(
@@ -1019,7 +1026,7 @@ def add_domain_layout(app):
                 region.append(region_)
             fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City', 'Region'], align='left'),
                                            cells=dict(values=[number, domain, city, region], align='left'),
-                                           columnwidth=[3, 6, 5, 5]
+                                           columnwidth=[5, 10, 5, 5]
                                            )
                                   ])
             fig.update_layout(height=650)
@@ -1036,7 +1043,7 @@ def add_domain_layout(app):
                 city.append(cityName)
             fig = go.Figure(data=[go.Table(header=dict(values=['Number', 'Domain', 'City'], align='left'),
                                            cells=dict(values=[number, domain, city], align='left'),
-                                           columnwidth=[3, 6, 5]
+                                           columnwidth=[4, 10, 5]
                                            )
                                   ])
             fig.update_layout(height=650)

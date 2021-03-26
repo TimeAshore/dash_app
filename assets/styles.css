@@ -175,10 +175,10 @@ body {
     position: sticky !important;
     left: 0px;
     background-color: white !important;
-    text-transform: lowercase;
-    font-variant: all-small-caps;
+    text-transform: capitalize;
+    font-variant: large;
     font-color: #232323;
-    font-size: 20pt;
+    font-size: 50pt;
     padding-bottom: 20px;
     box-shadow: none !important;
 }
@@ -188,8 +188,7 @@ body {
 }
 
 #las-table th.dash-header {
-    color: #c3c3c3;
-    font-stretch: condensed;
+    font-size: large;
 }
 
 #las-table th.dash-header > div {
