@@ -828,7 +828,10 @@ def generate_table(data=[]):
             {"if": {"row_index": "even"}, "backgroundColor": "#f9f9f9"}
         ],
         columns=[{"name": i, "id": i} for i in ['Name', 'City', 'Region', 'Sponsor', 'Sponsor Type', 'ICP number', 'Source', 'Create Time']],
-        data=data
+        data=data,
+        export_format='xlsx',
+        export_headers='display',
+        merge_duplicate_headers=True
     )
 
 
@@ -952,7 +955,12 @@ def add_domain_layout(app):
             html.Div(
                 [
                     html.Div(
-                        [dcc.Graph(id="domain_bar_id", figure=get_domain_bar())],
+                        [
+                            dcc.Graph(id="domain_bar_id", figure=get_domain_bar()),
+                            dcc.Markdown('''
+                                > 鼠标悬停在城市柱状条，右侧表格会列出对应数据。点击城市柱状条，柱状图会**更新为二级区域的数据分布**，并更新右侧表格
+                                '''),
+                        ],
                         className="pretty_container seven columns",
                     ),
                     html.Div(
