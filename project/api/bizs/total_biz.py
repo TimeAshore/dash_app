@@ -958,7 +958,8 @@ def add_domain_layout(app):
                         [
                             dcc.Graph(id="domain_bar_id", figure=get_domain_bar()),
                             dcc.Markdown('''
-                                > 鼠标悬停在城市柱状条，右侧表格会列出对应数据。点击城市柱状条，柱状图会**更新为二级区域的数据分布**，并更新右侧表格
+                                > 鼠标悬停在城市柱状条，右侧表格会列出对应数据   
+                                鼠标点击城市柱状条，柱状图会**更新为二级区域的数据分布**，并更新右侧表格
                                 '''),
                         ],
                         className="pretty_container seven columns",
