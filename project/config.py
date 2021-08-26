@@ -24,7 +24,7 @@ class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     JSON_AS_ASCII = False
 
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:123456@127.0.0.1/socamas"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@127.0.0.1/socamas"
     MESSAGE_QUEUE = "amqp://test_socweb:test_socweb@127.0.0.1/test_socweb"
     # MESSAGE_QUEUE = "'redis://192.168.199.221/3'"
     # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
